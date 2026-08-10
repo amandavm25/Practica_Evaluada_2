@@ -47,52 +47,121 @@ function EstudianteForm({
 
         const nuevosErrores = {};
 
+        const cedulaRegex =
+            /^[1-9]-\d{4}-\d{4}$/;
+
+        const correoRegex =
+            /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+        const nombreRegex =
+            /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+
         if (!formulario.cedula.trim()) {
+
             nuevosErrores.cedula =
                 "La cédula es obligatoria";
+
+        } else if (
+            !cedulaRegex.test(
+                formulario.cedula.trim()
+            )
+        ) {
+
+            nuevosErrores.cedula =
+                "Formato esperado: 1-1111-1111";
         }
 
         if (!formulario.nombre.trim()) {
+
             nuevosErrores.nombre =
                 "El nombre es obligatorio";
+
+        } else if (
+            formulario.nombre.trim().length < 2
+        ) {
+
+            nuevosErrores.nombre =
+                "El nombre debe tener al menos 2 caracteres";
+
+        } else if (
+            !nombreRegex.test(
+                formulario.nombre.trim()
+            )
+        ) {
+
+            nuevosErrores.nombre =
+                "El nombre contiene caracteres inválidos";
         }
 
         if (!formulario.apellido.trim()) {
+
             nuevosErrores.apellido =
                 "El apellido es obligatorio";
+
+        } else if (
+            formulario.apellido.trim().length < 2
+        ) {
+
+            nuevosErrores.apellido =
+                "El apellido debe tener al menos 2 caracteres";
+
+        } else if (
+            !nombreRegex.test(
+                formulario.apellido.trim()
+            )
+        ) {
+
+            nuevosErrores.apellido =
+                "El apellido contiene caracteres inválidos";
         }
 
         if (!formulario.correo.trim()) {
+
             nuevosErrores.correo =
                 "El correo es obligatorio";
+
         } else if (
-            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-                formulario.correo
+            !correoRegex.test(
+                formulario.correo.trim()
             )
         ) {
+
             nuevosErrores.correo =
-                "El correo no es válido";
+                "Ingrese un correo electrónico válido";
         }
 
         if (!formulario.carrera.trim()) {
+
             nuevosErrores.carrera =
                 "La carrera es obligatoria";
+
+        } else if (
+            formulario.carrera.trim().length < 3
+        ) {
+
+            nuevosErrores.carrera =
+                "La carrera debe tener al menos 3 caracteres";
         }
 
         if (!formulario.edad) {
+
             nuevosErrores.edad =
                 "La edad es obligatoria";
+
         } else if (
             formulario.edad < 15 ||
             formulario.edad > 100
         ) {
+
             nuevosErrores.edad =
                 "La edad debe estar entre 15 y 100 años";
         }
 
         setErrores(nuevosErrores);
 
-        return Object.keys(nuevosErrores).length === 0;
+        return (
+            Object.keys(nuevosErrores).length === 0
+        );
     };
 
     const manejarSubmit = (e) => {

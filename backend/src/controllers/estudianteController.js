@@ -38,17 +38,22 @@ const crear = (req, res) => {
 
     try {
 
-        const estudiante = service.crear(req.body);
+        const estudiante =
+            service.crear(req.body);
 
         res.status(201).json({
-            mensaje: "Estudiante creado correctamente",
+            mensaje:
+                "Estudiante creado correctamente",
             estudiante
         });
 
     } catch (error) {
 
-        res.status(400).json({
-            mensaje: error.message
+        res.status(
+            error.statusCode || 500
+        ).json({
+            mensaje: error.message,
+            errores: error.errors || null
         });
     }
 };
@@ -57,22 +62,28 @@ const actualizar = (req, res) => {
 
     try {
 
-        const id = Number(req.params.id);
+        const id =
+            Number(req.params.id);
 
-        const estudiante = service.actualizar(
-            id,
-            req.body
-        );
+        const estudiante =
+            service.actualizar(
+                id,
+                req.body
+            );
 
         res.status(200).json({
-            mensaje: "Estudiante actualizado correctamente",
+            mensaje:
+                "Estudiante actualizado correctamente",
             estudiante
         });
 
     } catch (error) {
 
-        res.status(400).json({
-            mensaje: error.message
+        res.status(
+            error.statusCode || 500
+        ).json({
+            mensaje: error.message,
+            errores: error.errors || null
         });
     }
 };

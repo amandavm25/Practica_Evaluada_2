@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 
+import Navbar from "./components/Navbar";
+import Dashboard from "./components/Dashboard";
 import EstudianteForm from "./components/EstudianteForm";
 import EstudianteList from "./components/EstudianteList";
+import Toast from "./components/Toast";
 
 import {
     obtenerEstudiantes,
@@ -14,6 +17,9 @@ import "./App.css";
 
 function App() {
 
+    const [vistaActual, setVistaActual] =
+        useState("dashboard");
+
     const [estudiantes, setEstudiantes] =
         useState([]);
 
@@ -23,8 +29,30 @@ function App() {
     const [cargando, setCargando] =
         useState(true);
 
-    const [error, setError] =
-        useState("");
+    const [toast, setToast] = useState({
+        mensaje: "",
+        tipo: "success"
+    });
+
+    const mostrarToast = (
+        mensaje,
+        tipo = "success"
+    ) => {
+
+        setToast({
+            mensaje,
+            tipo
+        });
+
+        setTimeout(() => {
+
+            setToast({
+                mensaje: "",
+                tipo: "success"
+            });
+
+        }, 4000);
+    };
 
     const cargarEstudiantes = async () => {
 
@@ -37,11 +65,12 @@ function App() {
 
             setEstudiantes(data);
 
-            setError("");
-
         } catch (error) {
 
-            setError(error.message);
+            mostrarToast(
+                error.message,
+                "error"
+            );
 
         } finally {
 
@@ -53,7 +82,9 @@ function App() {
         cargarEstudiantes();
     }, []);
 
-    const guardarEstudiante = async (estudiante) => {
+    const guardarEstudiante = async (
+        estudiante
+    ) => {
 
         try {
 
@@ -66,22 +97,45 @@ function App() {
 
                 setEstudianteEditar(null);
 
+                mostrarToast(
+                    "El estudiante fue actualizado correctamente.",
+                    "success"
+                );
+
             } else {
 
-                await crearEstudiante(estudiante);
+                await crearEstudiante(
+                    estudiante
+                );
+
+                mostrarToast(
+                    "El estudiante fue registrado correctamente.",
+                    "success"
+                );
             }
 
             await cargarEstudiantes();
 
         } catch (error) {
 
-            alert(error.message);
+            mostrarToast(
+                error.message,
+                "error"
+            );
         }
     };
 
-    const editarEstudiante = (estudiante) => {
+    const editarEstudiante = (
+        estudiante
+    ) => {
 
-        setEstudianteEditar(estudiante);
+        setEstudianteEditar(
+            estudiante
+        );
+
+        setVistaActual(
+            "estudiantes"
+        );
 
         window.scrollTo({
             top: 0,
@@ -91,24 +145,23 @@ function App() {
 
     const eliminar = async (id) => {
 
-        const confirmar =
-            window.confirm(
-                "¿Está seguro de eliminar este estudiante?"
-            );
-
-        if (!confirmar) {
-            return;
-        }
-
         try {
 
             await eliminarEstudiante(id);
 
             await cargarEstudiantes();
 
+            mostrarToast(
+                "El estudiante fue eliminado correctamente.",
+                "success"
+            );
+
         } catch (error) {
 
-            alert(error.message);
+            mostrarToast(
+                error.message,
+                "error"
+            );
         }
     };
 
@@ -116,71 +169,145 @@ function App() {
         setEstudianteEditar(null);
     };
 
+    const cambiarVista = (vista) => {
+
+        setVistaActual(vista);
+
+        if (vista === "dashboard") {
+            setEstudianteEditar(null);
+        }
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    };
+
     return (
 
         <div className="app">
 
-            <header className="header">
+            <Navbar
+                vistaActual={vistaActual}
+                cambiarVista={cambiarVista}
+            />
 
-                <div>
-                    <h1>
-                        Administración de Estudiantes
-                    </h1>
+            <main className="main-content">
 
-                    <p>
-                        Sistema CRUD de estudiantes
-                    </p>
-                </div>
+                {cargando ? (
 
-            </header>
+                    <div className="loading-page">
+                        Cargando información...
+                    </div>
 
-            <main className="container">
+                ) : vistaActual === "dashboard" ? (
 
-                <EstudianteForm
-                    estudianteEditar={estudianteEditar}
-                    onGuardar={guardarEstudiante}
-                    onCancelar={cancelarEdicion}
-                />
+                    <Dashboard
+                        estudiantes={estudiantes}
+                        cambiarVista={cambiarVista}
+                    />
 
-                <section className="students-section">
+                ) : (
 
-                    <div className="section-header">
+                    <div className="students-page">
 
-                        <h2>
-                            Estudiantes registrados
-                        </h2>
+                        <div className="page-header">
 
-                        <span className="counter">
-                            {estudiantes.length} estudiantes
-                        </span>
+                            <div>
+                                <h1>
+                                    Estudiantes
+                                </h1>
+
+                                <p>
+                                    Administración de registros académicos
+                                </p>
+                            </div>
+
+                            {!estudianteEditar && (
+                                <button
+                                    className="primary-button"
+                                    onClick={() =>
+                                        document
+                                            .getElementById(
+                                                "student-form"
+                                            )
+                                            ?.scrollIntoView({
+                                                behavior:
+                                                    "smooth"
+                                            })
+                                    }
+                                >
+                                    + Nuevo estudiante
+                                </button>
+                            )}
+
+                        </div>
+
+                        <div
+                            id="student-form"
+                            className="dashboard-card"
+                        >
+
+                            <EstudianteForm
+                                estudianteEditar={
+                                    estudianteEditar
+                                }
+                                onGuardar={
+                                    guardarEstudiante
+                                }
+                                onCancelar={
+                                    cancelarEdicion
+                                }
+                            />
+
+                        </div>
+
+                        <div className="dashboard-card">
+
+                            <div className="card-header">
+
+                                <div>
+                                    <h2>
+                                        Lista de estudiantes
+                                    </h2>
+
+                                    <p>
+                                        Administre los registros existentes
+                                    </p>
+                                </div>
+
+                            </div>
+
+                            <EstudianteList
+                                estudiantes={
+                                    estudiantes
+                                }
+                                onEditar={
+                                    editarEstudiante
+                                }
+                                onEliminar={
+                                    eliminar
+                                }
+                            />
+
+                        </div>
 
                     </div>
 
-                    {error && (
-                        <div className="error-message">
-                            {error}
-                        </div>
-                    )}
-
-                    {cargando ? (
-
-                        <div className="loading">
-                            Cargando estudiantes...
-                        </div>
-
-                    ) : (
-
-                        <EstudianteList
-                            estudiantes={estudiantes}
-                            onEditar={editarEstudiante}
-                            onEliminar={eliminar}
-                        />
-
-                    )}
-
-                </section>
+                )}
 
             </main>
+
+            <Toast
+                mensaje={toast.mensaje}
+                tipo={toast.tipo}
+                cerrar={() =>
+                    setToast({
+                        mensaje: "",
+                        tipo: "success"
+                    })
+                }
+            />
 
         </div>
     );
